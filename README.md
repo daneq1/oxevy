@@ -11,9 +11,7 @@
   Built with: ChatGPT • DeepSeek • OpenCode • Gemini • Cursor
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/daneq1/oxevy)
-  [![build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)](https://github.com/daneq1/oxevy)
-  
+  [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/daneq1/oxevy)
 </div>
 
 ## Preview
