@@ -46,3 +46,5 @@
 1. Clone the repository
    ```bash
    git clone https://github.com/daneq1/oxevy.git
+   ./gradlew
+fun fact this page is made by ai too
