@@ -38,7 +38,7 @@
 | AI Tool | Purpose |
 |---------|---------|
 | ChatGPT | Code optimization and feature implementation |
-| DeepSeek | AI logic and decision making |
+| DeepSeek | Prompt making |
 | OpenCode | Open-source best practices |
 | Gemini | UI/UX improvements |
 | Cursor | Development assistance |
