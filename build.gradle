@@ -40,6 +40,13 @@ repositories {
 
 loom {
     accessWidenerPath = file("src/main/resources/oxevy.accesswidener")
+    
+    runs {
+        client {
+            client()
+            name = "Client"
+        }
+    }
 }
 
 dependencies {
