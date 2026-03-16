@@ -1,5 +1,7 @@
 package me.alpha432.oxevy.features.modules.hud;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import me.alpha432.oxevy.Oxevy;
 import me.alpha432.oxevy.event.impl.render.Render2DEvent;
 import me.alpha432.oxevy.features.modules.client.HudModule;
@@ -14,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.Map;
+import java.util.UUID;
 
 public class TargetHudModule extends HudModule {
 
@@ -75,11 +79,18 @@ public class TargetHudModule extends HudModule {
         int bgColor = (alpha << 24) | 0x222222;
         ctx.fill((int) x, (int) y, (int) x + maxWidth, (int) y + height, bgColor);
 
-        // Draw player head placeholder (colored square)
+        // Draw player head
         if (showHead.getValue() && target instanceof Player player) {
-            int headColor = Oxevy.friendManager.isFriend(player) ? 0xFF00FF00 : 0xFFFFFFFF;
-            ctx.fill((int) x + 5, (int) y + 5, (int) x + 35, (int) y + 35, (alpha << 24) | headColor);
-            ctx.drawString(mc.font, "Head", (int) x + 8, (int) y + 12, (alpha << 24) | 0x000000);
+            // Draw background for head
+            ctx.fill((int) x + 5, (int) y + 5, (int) x + 35, (int) y + 35, (alpha << 24) | 0x333333);
+            
+            // Get player color based on UUID (consistent per player)
+            int playerColor = getPlayerColor(player);
+            ctx.fill((int) x + 6, (int) y + 6, (int) x + 34, (int) y + 34, (alpha << 24) | playerColor);
+            
+            // Draw player initial
+            String initial = player.getName().getString().substring(0, 1).toUpperCase();
+            ctx.drawString(mc.font, initial, (int) x + 12, (int) y + 11, (alpha << 24) | 0xFFFFFF);
         }
 
         int textStartX = showHead.getValue() ? (int) x + 40 : (int) x + 5;
@@ -175,6 +186,18 @@ public class TargetHudModule extends HudModule {
 
         setWidth((int) maxWidth);
         setHeight((int) height);
+    }
+
+    private int getPlayerColor(Player player) {
+        // Generate a consistent color based on player UUID
+        UUID uuid = player.getUUID();
+        int hue = Math.abs(uuid.hashCode() % 360);
+        
+        // Convert HSV to RGB (simplified)
+        float[] hsv = {hue / 360f, 0.7f, 0.8f};
+        Color color = Color.getHSBColor(hsv[0], hsv[1], hsv[2]);
+        
+        return (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue();
     }
 
     private Entity findTarget() {

@@ -82,7 +82,7 @@ public class Widget
         hoverAnimation = AnimationUtil.animate(hoverAnimation, targetHover, 0.2f, AnimationUtil.Easing.EASE_OUT);
         
         float totalItemHeight = this.open ? this.getTotalItemHeight() - 2.0f : 0.0f;
-        int color = ClickGuiModule.getInstance().topColor.getValue().getRGB();
+        int color = ClickGuiModule.getInstance().headerColor.getValue().getRGB();
         
         // Apply hover animation to header color
         int baseColor = ClickGuiModule.getInstance().rainbow.getValue() ? 

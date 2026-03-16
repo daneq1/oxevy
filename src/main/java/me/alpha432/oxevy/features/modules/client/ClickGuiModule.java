@@ -42,6 +42,13 @@ public class ClickGuiModule extends Module {
     public Setting<Boolean> slideInAnimation = bool("SlideInAnimation", true);
     public Setting<Boolean> scaleAnimation = bool("ScaleAnimation", true);
 
+    // GUI Customization
+    public Setting<Color> buttonColor = color("ButtonColor", 30, 30, 50, 255);
+    public Setting<Color> buttonHoverColor = color("ButtonHoverColor", 50, 50, 80, 255);
+    public Setting<Color> textColor = color("TextColor", 255, 255, 255, 255);
+    public Setting<Color> headerColor = color("HeaderColor", 0, 0, 30, 255);
+    public Setting<Color> enabledModuleColor = color("EnabledModuleColor", 0, 100, 255, 255);
+
     public ClickGuiModule() {
         super("ClickGui", "Opens the ClickGui", Module.Category.CLIENT);
         setBind(GLFW.GLFW_KEY_RIGHT_SHIFT);

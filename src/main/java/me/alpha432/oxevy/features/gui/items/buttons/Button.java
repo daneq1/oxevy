@@ -12,6 +12,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 
+import java.awt.Color;
+
 public class Button
         extends Item {
     private boolean state;
@@ -44,12 +46,23 @@ public class Button
         }
         toggleAnimation = AnimationUtil.animate(toggleAnimation, 1.0f, animSpeed, AnimationUtil.Easing.EASE_OUT_BACK);
         
+        // Get custom colors from settings
+        ClickGuiModule settings = ClickGuiModule.getInstance();
+        Color buttonColor = settings.buttonColor.getValue();
+        Color buttonHoverColor = settings.buttonHoverColor.getValue();
+        Color textColor = settings.textColor.getValue();
+        
         // Calculate colors with animations
         int baseColor;
         if (getState()) {
-            baseColor = Oxevy.colorManager.getColorWithAlpha(y, ClickGuiModule.getInstance().color.getValue().getAlpha());
+            baseColor = Oxevy.colorManager.getColorWithAlpha(y, settings.enabledModuleColor.getValue().getAlpha());
         } else {
-            baseColor = isHovering ? -2007673515 : 0x11555555;
+            // Interpolate between buttonColor and buttonHoverColor based on hover
+            int r = (int) (buttonColor.getRed() + (buttonHoverColor.getRed() - buttonColor.getRed()) * hoverAnimation);
+            int g = (int) (buttonColor.getGreen() + (buttonHoverColor.getGreen() - buttonColor.getGreen()) * hoverAnimation);
+            int b = (int) (buttonColor.getBlue() + (buttonHoverColor.getBlue() - buttonColor.getBlue()) * hoverAnimation);
+            int a = (int) (buttonColor.getAlpha() + (buttonHoverColor.getAlpha() - buttonColor.getAlpha()) * hoverAnimation);
+            baseColor = (a << 24) | (r << 16) | (g << 8) | b;
         }
         
         // Apply hover brightness animation
@@ -68,9 +81,9 @@ public class Button
         
         RenderUtil.rect(context, drawX, drawY, drawX + drawWidth, drawY + drawHeight, animatedColor);
         
-        // Draw text synced to ClickGui client color
-        int textColor = ColorUtil.toRGBA(ClickGuiModule.getInstance().color.getValue());
-        drawString(this.getName(), this.x + 2.3f, this.y - 2.0f - (float) OxevyGui.getClickGui().getTextOffset(), textColor);
+        // Draw text with custom color
+        int textColorValue = ColorUtil.toRGBA(textColor);
+        drawString(this.getName(), this.x + 2.3f, this.y - 2.0f - (float) OxevyGui.getClickGui().getTextOffset(), textColorValue);
     }
 
     @Override

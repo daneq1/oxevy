@@ -32,6 +32,8 @@ Built with: ChatGPT • DeepSeek • OpenCode • Gemini • Cursor
 - **Criticals** - Force critical hits
 - **Strafe** - Combat strafe
 - **KeyPearl** - Auto-throw ender pearls
+- **AutoTrap** - Trap enemies with blocks (supports offhand)
+- **AutoCobweb** - Trap enemies in cobwebs
 
 ### Movement
 - **Flight** - Fly mode
@@ -42,6 +44,7 @@ Built with: ChatGPT • DeepSeek • OpenCode • Gemini • Cursor
 
 ### Player
 - **NoFall** - Prevent fall damage
+- **AntiCobweb** - Escape cobwebs faster
 - **FastPlace** - Faster item placement
 - **Velocity** - Modify knockback
 - **AutoTotem** - Auto-switch to totem
@@ -64,12 +67,12 @@ Built with: ChatGPT • DeepSeek • OpenCode • Gemini • Cursor
 - **Watermark** - Client watermark
 - **MenuWatermark** - Shows on main menu
 - **Coordinates** - Player coordinates
-- **TargetHUD** - Target information with armor/head display
+- **TargetHUD** - Target information with armor/ping/combat prediction
 - **ServerInfo** - Server details
 - **FPS** - Display FPS
 
 ### Client
-- **ClickGui** - Module configuration GUI with Ctrl+F search
+- **ClickGui** - Module configuration GUI with Ctrl+F search and color customization
 - **HudEditor** - Edit HUD positions
 - **Notifications** - Module notifications
 
@@ -129,6 +132,23 @@ Save and load multiple configurations:
 - OyVey - Base client
 - Fabric Team - Fabric API
 - Mixin Team - Mixin
+
+## Changelog
+
+### v1.0.1
+#### Bug Fixes
+- Fixed timer not working (now uses Oxevy.TIMER)
+- Fixed crash when looking at entities (InteractionUtil)
+- Fixed broken MixinPlayerEntity
+
+#### Features
+- Added AntiCobweb module (Jump + Speed options)
+- Added AutoCobweb module (places cobwebs on target)
+- Added offhand support to AutoTrap
+- Added ClickGui customization (button color, hover color, text color, header color, enabled module color)
+
+#### Improvements
+- Redesigned TargetHUD with cleaner ServerInfo-style look
 
 ---
 
