@@ -8,6 +8,7 @@
   ],
   "client": [
     "entity.MixinClientPlayerEntity",
+    "entity.MixinPlayerEntity",
     "input.MixinKeyboard",
     "input.MixinMouse",
     "network.MixinClientPlayNetworkHandler",

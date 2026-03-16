@@ -2,7 +2,6 @@ package me.alpha432.oxevy.features.modules.combat;
 
 import me.alpha432.oxevy.Oxevy;
 import me.alpha432.oxevy.features.modules.Module;
-import me.alpha432.oxevy.features.modules.player.ReachModule;
 import me.alpha432.oxevy.features.settings.Setting;
 import me.alpha432.oxevy.util.MathUtil;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
@@ -17,11 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.vehicle.VehicleEntity;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class KillAuraModule extends Module {
     private final Setting<Double> range = num("Range", 5.0, 0.1, 10.0);

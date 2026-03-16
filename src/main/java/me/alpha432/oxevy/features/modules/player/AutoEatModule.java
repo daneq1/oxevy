@@ -2,12 +2,14 @@ package me.alpha432.oxevy.features.modules.player;
 
 import me.alpha432.oxevy.features.modules.Module;
 import me.alpha432.oxevy.features.settings.Setting;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class AutoEatModule extends Module {
     public final Setting<Integer> hungerThreshold = num("HungerThreshold", 14, 1, 20);
+
+    private int prevSlot = -1;
+    private boolean wasEating = false;
 
     public AutoEatModule() {
         super("AutoEat", "Auto eats food", Category.PLAYER);
@@ -19,20 +21,32 @@ public class AutoEatModule extends Module {
 
         int foodLevel = mc.player.getFoodData().getFoodLevel();
         
-        if (foodLevel >= hungerThreshold.getValue()) return;
-        if (mc.player.isUsingItem()) return;
+        // Check if we should eat
+        if (foodLevel < hungerThreshold.getValue() && !mc.player.isUsingItem()) {
+            int foodSlot = findFoodSlot();
+            
+            if (foodSlot != -1 && !wasEating) {
+                prevSlot = mc.player.getInventory().getSelectedSlot();
+                mc.player.getInventory().setSelectedSlot(foodSlot);
+                wasEating = true;
+            }
+        } else if (wasEating && !mc.player.isUsingItem()) {
+            // Stop eating - switch back
+            if (prevSlot != -1) {
+                mc.player.getInventory().setSelectedSlot(prevSlot);
+                prevSlot = -1;
+                wasEating = false;
+            }
+        }
+    }
 
-        int foodSlot = findFoodSlot();
-        
-        if (foodSlot != -1) {
-            int prevSlot = mc.player.getInventory().getSelectedSlot();
-            mc.player.getInventory().setSelectedSlot(foodSlot);
-            
-            // Use item in hand
-            mc.player.swing(InteractionHand.MAIN_HAND);
-            
-            // Switch back
+    @Override
+    public void onDisable() {
+        // Reset slot when disabled
+        if (prevSlot != -1) {
             mc.player.getInventory().setSelectedSlot(prevSlot);
+            prevSlot = -1;
+            wasEating = false;
         }
     }
 
@@ -55,6 +69,7 @@ public class AutoEatModule extends Module {
                item == Items.ENCHANTED_GOLDEN_APPLE ||
                item == Items.APPLE ||
                item == Items.CARROT ||
-               item == Items.POTATO;
+               item == Items.POTATO ||
+               item == Items.MILK_BUCKET;
     }
 }
