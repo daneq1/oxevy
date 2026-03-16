@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
@@ -23,6 +24,8 @@ public class TargetHudModule extends HudModule {
     private final Setting<Boolean> showName = bool("Name", true);
     private final Setting<Boolean> showHealthBar = bool("HealthBar", true);
     private final Setting<Boolean> showArmorBar = bool("ArmorBar", true);
+    private final Setting<Boolean> showHead = bool("Head", true);
+    private final Setting<Boolean> showItems = bool("Items", true);
     private final Setting<Boolean> smoothAnimations = bool("SmoothAnimations", true);
     private final Setting<Color> healthColor = color("HealthColor", 255, 0, 0, 255);
     private final Setting<Color> armorColor = color("ArmorColor", 0, 120, 255, 255);
@@ -34,7 +37,7 @@ public class TargetHudModule extends HudModule {
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.#");
 
     public TargetHudModule() {
-        super("TargetHUD", "Shows information about your target", 150, 50);
+        super("TargetHUD", "Shows information about your target", 180, 60);
     }
 
     @Override
@@ -45,10 +48,8 @@ public class TargetHudModule extends HudModule {
         float x = getX();
         float y = getY();
 
-        // Find target (looking at entity or KillAura target)
         Entity newTarget = findTarget();
         
-        // Update target with animation
         if (newTarget != target) {
             target = newTarget;
             if (smoothAnimations.getValue()) {
@@ -56,115 +57,132 @@ public class TargetHudModule extends HudModule {
             }
         }
 
-        // Update animation
         float targetAlphaTarget = target != null ? 1.0f : 0.0f;
         targetAlpha = AnimationUtil.animate(targetAlpha, targetAlphaTarget, 
             smoothAnimations.getValue() ? 0.15f : 1.0f, AnimationUtil.Easing.EASE_OUT);
 
         if (target == null || targetAlpha < 0.01f) {
-            setWidth(150);
-            setHeight(40);
+            setWidth(180);
+            setHeight(50);
             return;
         }
 
-        // Calculate dimensions
-        int maxWidth = 150;
-        int height = 45;
-        int barWidth = maxWidth - 10;
-
-        // Apply fade animation
+        int maxWidth = 180;
+        int height = 60;
+        int barWidth = maxWidth - 40;
         int alpha = (int) (targetAlpha * 255);
 
-        // Draw background
         int bgColor = (alpha << 24) | 0x222222;
         ctx.fill((int) x, (int) y, (int) x + maxWidth, (int) y + height, bgColor);
 
-        // Draw target name
+        // Draw player head placeholder (colored square)
+        if (showHead.getValue() && target instanceof Player player) {
+            int headColor = Oxevy.friendManager.isFriend(player) ? 0xFF00FF00 : 0xFFFFFFFF;
+            ctx.fill((int) x + 5, (int) y + 5, (int) x + 35, (int) y + 35, (alpha << 24) | headColor);
+            ctx.drawString(mc.font, "Head", (int) x + 8, (int) y + 12, (alpha << 24) | 0x000000);
+        }
+
+        int textStartX = showHead.getValue() ? (int) x + 40 : (int) x + 5;
+
         if (showName.getValue()) {
             String name = target.getName().getString();
-            ctx.drawString(mc.font, name, (int) x + 5, (int) y + 3, 
+            ctx.drawString(mc.font, name, textStartX, (int) y + 3, 
                 (alpha << 24) | 0xFFFFFF);
         }
 
-        // Draw health bar
         if (showHealthBar.getValue() && target instanceof LivingEntity living) {
             float health = living.getHealth();
             float maxHealth = living.getMaxHealth();
             float healthPercent = Math.max(0, Math.min(1, health / maxHealth));
             
-            // Health bar background
-            ctx.fill((int) x + 5, (int) y + 15, (int) x + 5 + barWidth, (int) y + 23, 
+            ctx.fill(textStartX, (int) y + 15, textStartX + barWidth, (int) y + 23, 
                 (alpha << 24) | 0x444444);
             
-            // Health bar fill
             int hpColor = healthColor.getValue().getRGB();
             int hpAlpha = (alpha << 24) | (hpColor & 0x00FFFFFF);
             int hpBarWidth = (int) (barWidth * healthPercent);
-            ctx.fill((int) x + 5, (int) y + 15, 
-                (int) x + 5 + hpBarWidth, (int) y + 23, hpAlpha);
+            ctx.fill(textStartX, (int) y + 15, 
+                textStartX + hpBarWidth, (int) y + 23, hpAlpha);
         }
 
-        // Draw armor bar
         if (showArmorBar.getValue() && target instanceof Player player) {
             float armor = player.getArmorValue();
             float armorPercent = Math.min(1, armor / 20f);
             
-            // Armor bar background
-            ctx.fill((int) x + 5, (int) y + 25, (int) x + 5 + barWidth, (int) y + 31, 
+            ctx.fill(textStartX, (int) y + 25, textStartX + barWidth, (int) y + 33, 
                 (alpha << 24) | 0x444444);
             
-            // Armor bar fill
             int armorColorValue = armorColor.getValue().getRGB();
             int armorAlpha = (alpha << 24) | (armorColorValue & 0x00FFFFFF);
             int armorBarWidth = (int) (barWidth * armorPercent);
-            ctx.fill((int) x + 5, (int) y + 25, 
-                (int) x + 5 + armorBarWidth, (int) y + 31, armorAlpha);
+            ctx.fill(textStartX, (int) y + 25, 
+                textStartX + armorBarWidth, (int) y + 33, armorAlpha);
+        }
+
+        // Draw items/armor
+        if (showItems.getValue() && target instanceof Player player) {
+            int itemY = (int) y + 38;
+            int itemX = textStartX;
+            
+            // Draw equipment slots (helmet, chestplate, leggings, boots, mainhand, offhand)
+            ItemStack[] items = {
+                player.getItemBySlot(EquipmentSlot.HEAD),
+                player.getItemBySlot(EquipmentSlot.CHEST),
+                player.getItemBySlot(EquipmentSlot.LEGS),
+                player.getItemBySlot(EquipmentSlot.FEET),
+                player.getMainHandItem(),
+                player.getOffhandItem()
+            };
+            
+            for (int i = 0; i < items.length; i++) {
+                if (!items[i].isEmpty()) {
+                    ctx.renderItem(items[i], itemX, itemY);
+                    ctx.renderItemDecorations(mc.font, items[i], itemX, itemY);
+                    itemX += 16;
+                }
+            }
         }
 
         // Draw info text
-        int infoY = (int) y + 35;
-        String infoText = "";
+        int infoY = (int) y + 38;
+        if (!showItems.getValue() || !(target instanceof Player)) {
+            String infoText = "";
 
-        if (showHealth.getValue() && target instanceof LivingEntity living) {
-            infoText += "HP: " + DECIMAL_FORMAT.format(living.getHealth()) + "  ";
+            if (showHealth.getValue() && target instanceof LivingEntity living) {
+                infoText += "HP: " + DECIMAL_FORMAT.format(living.getHealth()) + "  ";
+            }
+
+            if (showDistance.getValue()) {
+                double dist = mc.player.distanceTo(target);
+                infoText += "Dist: " + DECIMAL_FORMAT.format(dist) + "m  ";
+            }
+
+            if (showArmor.getValue() && target instanceof Player player) {
+                infoText += "Armor: " + (int) player.getArmorValue() + "  ";
+            }
+
+            if (showPing.getValue() && target instanceof Player player) {
+                int ping = 0;
+                try {
+                    ping = mc.getConnection().getPlayerInfo(player.getUUID()) != null ? 
+                        mc.getConnection().getPlayerInfo(player.getUUID()).getLatency() : 0;
+                } catch (Exception ignored) {}
+                infoText += "Ping: " + ping + "ms";
+            }
+
+            ctx.drawString(mc.font, infoText, textStartX, infoY, (alpha << 24) | 0xAAAAAA);
         }
-
-        if (showDistance.getValue()) {
-            double dist = mc.player.distanceTo(target);
-            infoText += "Dist: " + DECIMAL_FORMAT.format(dist) + "m  ";
-        }
-
-        if (showArmor.getValue() && target instanceof Player player) {
-            infoText += "Armor: " + (int) player.getArmorValue() + "  ";
-        }
-
-        if (showPing.getValue() && target instanceof Player player) {
-            // Get ping (approximation)
-            int ping = 0;
-            try {
-                ping = mc.getConnection().getPlayerInfo(player.getUUID()) != null ? 
-                    mc.getConnection().getPlayerInfo(player.getUUID()).getLatency() : 0;
-            } catch (Exception ignored) {}
-            infoText += "Ping: " + ping + "ms";
-        }
-
-        ctx.drawString(mc.font, infoText, (int) x + 5, infoY, (alpha << 24) | 0xAAAAAA);
 
         setWidth((int) maxWidth);
         setHeight((int) height);
     }
 
     private Entity findTarget() {
-        // Check KillAura target first
-        // You can integrate this with your KillAura module if it has a target field
-        
-        // Look at entity
         Entity entity = mc.crosshairPickEntity;
         if (entity != null && entity.isAlive()) {
             return entity;
         }
 
-        // Return last valid target
         if (target != null && target.isAlive()) {
             return target;
         }

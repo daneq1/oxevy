@@ -3,14 +3,14 @@
   "id": "oxevy",
   "version": "${version}",
   "name": "Oxevy",
-  "description": "Free and open-source Minecraft client",
+  "description": "HI made by danek check out the github",
   "authors": [
-    "3arthqu4ke",
-    "alpha432",
-    "cattyn"
+    "danek",
+    "deepseek",
+    "openbox"
   ],
   "contact": {
-    "repo": "https://github.com/mioclient/oxevy"
+    "repo": "https://github.com/daneq1/oxevy"
   },
   "license": "MIT",
   "environment": "client",

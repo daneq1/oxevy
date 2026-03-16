@@ -38,7 +38,7 @@ public class CommandManager extends Feature implements Jsonable {
         register(new HelpCommand());
         register(new PrefixCommand());
         register(new ToggleCommand());
-        // Config command removed on revert
+        register(new ConfigCommand());
 
         LOGGER.info("Registered {} commands", commandList.size());
         Oxevy.configManager.addConfig(this);

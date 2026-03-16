@@ -5,6 +5,7 @@ import me.alpha432.oxevy.features.modules.Module;
 import me.alpha432.oxevy.features.settings.Setting;
 import me.alpha432.oxevy.util.MathUtil;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,8 +25,12 @@ import java.util.stream.StreamSupport;
 public class KillAuraModule extends Module {
     private final Setting<Double> range = num("Range", 5.0, 0.1, 10.0);
     private final Setting<Double> cps = num("CPS", 10.0, 1.0, 20.0);
+    private final Setting<Integer> cooldown = num("Cooldown", 0, 0, 1000);
+    private final Setting<Boolean> sync = bool("Sync", false);
     private final Setting<Boolean> randomization = bool("Randomization", true);
     private final Setting<Boolean> rotate = bool("Rotate", true);
+    private final Setting<Boolean> clientRotate = bool("ClientRotate", true);
+    private final Setting<Boolean> serverRotate = bool("ServerRotate", false);
     private final Setting<Boolean> smooth = bool("Smooth", false);
     private final Setting<Boolean> silentSwing = bool("SilentSwing", false);
     private final Setting<Boolean> prediction = bool("Prediction", false);
@@ -51,7 +56,7 @@ public class KillAuraModule extends Module {
         target = findTarget();
         Oxevy.targetManager.setTarget(target instanceof LivingEntity le ? le : null);
         if (target != null) {
-            if (rotate.getValue()) {
+            if (rotate.getValue() && (clientRotate.getValue() || serverRotate.getValue())) {
                 rotateTo(target);
             }
             if (shouldAttack()) {
@@ -111,6 +116,8 @@ public class KillAuraModule extends Module {
         return mc.player.isAlliedTo(player);
     }
 
+    private long lastRotationPacket = 0;
+    
     private void rotateTo(Entity entity) {
         Vec3 targetPos = entity.getEyePosition();
         if (prediction.getValue()) {
@@ -121,17 +128,54 @@ public class KillAuraModule extends Module {
         if (smooth.getValue()) {
              float yawDelta = MathUtil.wrapDegrees(angle[0] - Oxevy.rotationManager.getYaw());
              float pitchDelta = MathUtil.wrapDegrees(angle[1] - Oxevy.rotationManager.getPitch());
-             float speed = 10.0f; // Could be a setting
-             float newYaw = Oxevy.rotationManager.getYaw() + (yawDelta / speed);
-             float newPitch = Oxevy.rotationManager.getPitch() + (pitchDelta / speed);
-             Oxevy.rotationManager.setPlayerRotations(newYaw, newPitch);
-        } else {
+             float speed = 10.0f;
+             angle[0] = Oxevy.rotationManager.getYaw() + (yawDelta / speed);
+             angle[1] = Oxevy.rotationManager.getPitch() + (pitchDelta / speed);
+        }
+        
+        if (clientRotate.getValue()) {
             Oxevy.rotationManager.setPlayerRotations(angle[0], angle[1]);
         }
+        
+        if (serverRotate.getValue()) {
+            long now = System.currentTimeMillis();
+            if (now - lastRotationPacket > 50) {
+                sendRotationPacket(angle[0], angle[1]);
+                lastRotationPacket = now;
+            }
+        }
+    }
+    
+    private void sendRotationPacket(float yaw, float pitch) {
+        if (mc.player.connection == null) return;
+        
+        boolean onGround = mc.player.onGround();
+        boolean horizontalCollision = mc.player.horizontalCollision;
+        mc.player.connection.send(new ServerboundMovePlayerPacket.PosRot(
+            mc.player.getX(),
+            mc.player.getY(),
+            mc.player.getZ(),
+            yaw,
+            pitch,
+            onGround,
+            horizontalCollision
+        ));
     }
 
     private boolean shouldAttack() {
         long timeSinceLastAttack = System.currentTimeMillis() - lastAttackTime;
+        
+        if (sync.getValue()) {
+            if (mc.player.oAttackAnim > 0.0f) {
+                return false;
+            }
+        }
+        
+        int cooldownMs = cooldown.getValue();
+        if (cooldownMs > 0 && timeSinceLastAttack < cooldownMs) {
+            return false;
+        }
+        
         double currentCps = cps.getValue();
         if (randomization.getValue()) {
             currentCps += MathUtil.getRandom(-2.0, 2.0);

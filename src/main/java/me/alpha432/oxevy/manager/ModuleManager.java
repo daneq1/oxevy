@@ -23,21 +23,28 @@ import me.alpha432.oxevy.features.modules.hud.FpsHudModule;
 import me.alpha432.oxevy.features.modules.hud.ServerInfoHudModule;
 import me.alpha432.oxevy.features.modules.hud.TargetHudModule;
 import me.alpha432.oxevy.features.modules.hud.WatermarkHudModule;
+import me.alpha432.oxevy.features.modules.hud.MenuWatermark;
 import me.alpha432.oxevy.features.modules.misc.MCFModule;
 import me.alpha432.oxevy.features.modules.combat.Strafe;
 import me.alpha432.oxevy.features.modules.movement.Flight;
 import me.alpha432.oxevy.features.modules.movement.ReverseStepModule;
-import me.alpha432.oxevy.features.modules.movement.SpeedBuff;
+import me.alpha432.oxevy.features.modules.movement.SpeedHack;
 import me.alpha432.oxevy.features.modules.movement.StepModule;
+import me.alpha432.oxevy.features.modules.movement.TimerModule;
 import me.alpha432.oxevy.features.modules.player.FastPlaceModule;
 import me.alpha432.oxevy.features.modules.player.NoFallModule;
 import me.alpha432.oxevy.features.modules.player.VelocityModule;
+import me.alpha432.oxevy.features.modules.player.AutoTotemModule;
+import me.alpha432.oxevy.features.modules.player.AutoEatModule;
+import me.alpha432.oxevy.features.modules.player.AirPlaceModule;
+import me.alpha432.oxevy.features.modules.player.FastBreakModule;
 import me.alpha432.oxevy.features.modules.render.BlockHighlightModule;
 import me.alpha432.oxevy.features.modules.render.ChestESPModule;
 import me.alpha432.oxevy.features.modules.render.TracerModule;
 import me.alpha432.oxevy.features.modules.render.ESP;
 import me.alpha432.oxevy.features.modules.render.HealthBarModule;
 import me.alpha432.oxevy.features.modules.render.NametagsModule;
+import me.alpha432.oxevy.features.modules.render.FullbrightModule;
 // TracerModule removed to avoid cross-package conflicts; Autotool module is used instead
 import me.alpha432.oxevy.features.modules.misc.AutoToolModule;
 import me.alpha432.oxevy.util.traits.Jsonable;
@@ -56,6 +63,7 @@ public class ModuleManager implements Jsonable, Util {
 
     public void init() {
         register(new WatermarkHudModule());
+        register(new MenuWatermark());
         register(new CoordinatesHudModule());
         register(new FpsHudModule());
         register(new ServerInfoHudModule());
@@ -70,7 +78,8 @@ public class ModuleManager implements Jsonable, Util {
         register(new MCFModule());
         register(new StepModule());
         register(new ReverseStepModule());
-        register(new SpeedBuff());
+        register(new SpeedHack());
+        register(new TimerModule());
         register(new Flight());
         register(new Strafe());
         register(new FastPlaceModule());
@@ -80,6 +89,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new HealthBarModule());
         register(new ChestESPModule());
         register(new TracerModule());
+        register(new FullbrightModule());
         // Expose client spoofing toggles in the ClickGui as first-class modules
         register(new PingSpoof());
         register(new ClientSpoof());
@@ -88,6 +98,10 @@ public class ModuleManager implements Jsonable, Util {
         register(new AutoToolModule());
         register(new NoFallModule());
         register(new KeyPearlModule());
+        register(new AutoTotemModule());
+        register(new AutoEatModule());
+        register(new AirPlaceModule());
+        register(new FastBreakModule());
 
         LOGGER.info("Registered {} modules", modules.size());
 

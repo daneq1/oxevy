@@ -13,6 +13,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 import me.alpha432.oxevy.util.ColorUtil;
@@ -33,6 +34,10 @@ public class OxevyGui extends Screen {
     // Animation values for GUI open/close
     private float guiOpenAnimation = 0.0f;
     private boolean wasOpen = false;
+    
+    // Search bar
+    private boolean searchOpen = false;
+    private float searchAnimation = 0.0f;
 
     public OxevyGui() {
         super(Component.literal("Oxevy"));
@@ -71,7 +76,7 @@ public class OxevyGui extends Screen {
 
     private void applySearchFilter() {
         String searchQuery = ClickGuiModule.getInstance().searchBar.getValue().toLowerCase();
-        boolean hasSearch = !searchQuery.isEmpty() && ClickGuiModule.getInstance().searchBarEnabled.getValue();
+        boolean hasSearch = !searchQuery.isEmpty();
         
         for (Widget widget : this.widgets) {
             boolean hasVisibleItems = false;
@@ -82,7 +87,6 @@ public class OxevyGui extends Screen {
                     if (matches) hasVisibleItems = true;
                 }
             }
-            // Hide widget if no items match the search
             widget.setHidden(hasSearch && !hasVisibleItems);
         }
     }
@@ -103,50 +107,46 @@ public class OxevyGui extends Screen {
         int bgColor = new Color(0, 0, 0, (int)(120 * alpha)).hashCode();
         context.fill(0, 0, context.guiWidth(), context.guiHeight(), bgColor);
         
-        // Draw search bar and toggle button (always show the button)
-        String searchQuery = ClickGuiModule.getInstance().searchBar.getValue();
-        int searchWidth = 200;
-        int searchX = context.guiWidth() / 2 - searchWidth / 2;
-        int searchY = 15;
-        int btnWidth = 20;
-        int btnHeight = 14;
-        int btnX = searchX + searchWidth + 4;
-        
-        // Search bar background (only if enabled) with fade animation
-        if (ClickGuiModule.getInstance().searchBarEnabled.getValue()) {
-            int topColorAlpha = (int) (ClickGuiModule.getInstance().topColor.getValue().getAlpha() * alpha);
-            int animatedTopColor = (topColorAlpha << 24) | (ClickGuiModule.getInstance().topColor.getValue().getRGB() & 0x00FFFFFF);
-            context.fill(searchX - 2, searchY - 2, searchX + searchWidth + 2, searchY + 14, animatedTopColor);
-            context.fill(searchX, searchY, searchX + searchWidth, searchY + 10, (int)(0xFF * alpha) << 24);
+        // Draw search bar (vanilla style - appears when Ctrl+F is pressed)
+        if (searchOpen) {
+            String searchQuery = ClickGuiModule.getInstance().searchBar.getValue();
+            ClickGuiModule search = ClickGuiModule.getInstance();
             
-            // Search text with fade animation
-            String displayText = searchQuery.isEmpty() ? "Search modules..." : searchQuery;
-            // Text color synced to client color
-            int guiColor = ColorUtil.toRGBA(ClickGuiModule.getInstance().color.getValue());
-            int textColor = searchQuery.isEmpty() ? ColorUtil.toRGBA(new Color(ClickGuiModule.getInstance().color.getValue().getRed(), ClickGuiModule.getInstance().color.getValue().getGreen(), ClickGuiModule.getInstance().color.getValue().getBlue(), Math.max(100, ClickGuiModule.getInstance().color.getValue().getAlpha()))) : guiColor;
-            int textWidth = minecraft.font.width(displayText);
-            if (textWidth > searchWidth - 4) {
-                displayText = minecraft.font.plainSubstrByWidth(displayText, searchWidth - 4) + "...";
+            int sWidth = search.searchWidth.getValue();
+            int sXOffset = search.searchXOffset.getValue();
+            int sYOffset = search.searchYOffset.getValue();
+            int searchX = context.guiWidth() - sWidth - sXOffset;
+            int searchY = sYOffset;
+            
+            // Get colors from settings
+            Color bgColorSetting = search.searchBgColor.getValue();
+            Color textColorSetting = search.searchTextColor.getValue();
+            Color placeholderColorSetting = search.searchPlaceholderColor.getValue();
+            
+            int searchBgColor = (bgColorSetting.getAlpha() << 24) | (bgColorSetting.getRed() << 16) | (bgColorSetting.getGreen() << 8) | bgColorSetting.getBlue();
+            int searchInnerBgColor = ((bgColorSetting.getAlpha() - 40) << 24) | ((bgColorSetting.getRed() - 20) << 16) | ((bgColorSetting.getGreen() - 20) << 8) | (bgColorSetting.getBlue() - 20);
+            int searchTextColor = (textColorSetting.getAlpha() << 24) | (textColorSetting.getRed() << 16) | (textColorSetting.getGreen() << 8) | textColorSetting.getBlue();
+            int searchPlaceholderColor = (placeholderColorSetting.getAlpha() << 24) | (placeholderColorSetting.getRed() << 16) | (placeholderColorSetting.getGreen() << 8) | placeholderColorSetting.getBlue();
+            
+            // Search background
+            context.fill(searchX - 2, searchY - 2, searchX + sWidth + 2, searchY + 18, searchBgColor);
+            context.fill(searchX, searchY, searchX + sWidth, searchY + 14, searchInnerBgColor);
+            
+            // Search icon
+            if (search.searchShowIcon.getValue()) {
+                context.drawString(minecraft.font, "🔍", searchX + 4, searchY + 2, searchTextColor);
             }
-            int textColorAnimated = (int)((textColor & 0xFF000000) * alpha) | (textColor & 0x00FFFFFF);
-            context.drawString(minecraft.font, displayText, searchX + 4, searchY + 1, textColorAnimated, false);
+            
+            // Search text
+            String displayText = searchQuery.isEmpty() ? "Filter" : searchQuery;
+            int txtColor = searchQuery.isEmpty() ? searchPlaceholderColor : searchTextColor;
+            int textOffset = search.searchShowIcon.getValue() ? 16 : 4;
+            context.drawString(minecraft.font, displayText, searchX + textOffset, searchY + 2, txtColor);
+            
+            applySearchFilter();
+        } else {
+            applySearchFilter();
         }
-        
-        applySearchFilter();
-        
-        // Toggle button (always visible) with hover animation
-        boolean isHovered = mouseX >= btnX && mouseX <= btnX + btnWidth && mouseY >= searchY && mouseY <= searchY + btnHeight;
-        float btnHoverAnim = isHovered ? 1.0f : 0.0f;
-        btnHoverAnim = AnimationUtil.animate(btnHoverAnim, btnHoverAnim, 0.15f, AnimationUtil.Easing.EASE_OUT);
-        
-        int baseBtnColor = ClickGuiModule.getInstance().searchBarEnabled.getValue() ? 0xFF00AA00 : 0xFFAA0000;
-        int hoverBtnColor = ClickGuiModule.getInstance().searchBarEnabled.getValue() ? 0xFF00FF00 : 0xFFFF0000;
-        int btnColor = AnimationUtil.interpolateColor(baseBtnColor, hoverBtnColor, btnHoverAnim);
-        
-        context.fill(btnX, searchY, btnX + btnWidth, searchY + btnHeight, btnColor);
-        String btnText = ClickGuiModule.getInstance().searchBarEnabled.getValue() ? "ON" : "OFF";
-        int textW = minecraft.font.width(btnText);
-        context.drawString(minecraft.font, btnText, btnX + (btnWidth - textW) / 2, searchY + 2, 0xFFFFFFFF, false);
         
         // Draw widgets with animation
         this.widgets.forEach(components -> {
@@ -195,22 +195,37 @@ public class OxevyGui extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent input) {
-        boolean searchEnabled = ClickGuiModule.getInstance().searchBarEnabled.getValue();
+        // Handle Ctrl+F to toggle search
+        boolean ctrlPressed = GLFW.glfwGetKey(minecraft.getWindow().handle(), GLFW.GLFW_KEY_LEFT_CONTROL) == 1 || 
+                              GLFW.glfwGetKey(minecraft.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_CONTROL) == 1;
+        
+        if (ctrlPressed && input.key() == GLFW.GLFW_KEY_F) {
+            searchOpen = !searchOpen;
+            if (!searchOpen) {
+                ClickGuiModule.getInstance().searchBar.setValue("");
+            }
+            return true;
+        }
+        
+        // If search is not open, don't process search-related keys
+        if (!searchOpen) {
+            this.widgets.forEach(component -> component.onKeyPressed(input.input()));
+            return super.keyPressed(input);
+        }
+        
         String searchQuery = ClickGuiModule.getInstance().searchBar.getValue();
         
-        // Handle search-related keys only if search is enabled
-        if (searchEnabled) {
-            // Handle backspace (key code 259 is backspace)
-            if (input.key() == 259 && !searchQuery.isEmpty()) {
-                ClickGuiModule.getInstance().searchBar.setValue(searchQuery.substring(0, searchQuery.length() - 1));
-                return true;
-            }
-            
-            // Handle escape to clear search (key code 256 is escape)
-            if (input.key() == 256) {
-                ClickGuiModule.getInstance().searchBar.setValue("");
-                return true;
-            }
+        // Handle backspace (key code 259 is backspace)
+        if (input.key() == 259 && !searchQuery.isEmpty()) {
+            ClickGuiModule.getInstance().searchBar.setValue(searchQuery.substring(0, searchQuery.length() - 1));
+            return true;
+        }
+        
+        // Handle escape to close search
+        if (input.key() == 256) {
+            searchOpen = false;
+            ClickGuiModule.getInstance().searchBar.setValue("");
+            return true;
         }
         
         this.widgets.forEach(component -> component.onKeyPressed(input.input()));
@@ -219,12 +234,16 @@ public class OxevyGui extends Screen {
     
     @Override
     public boolean charTyped(CharacterEvent input) {
-        boolean searchEnabled = ClickGuiModule.getInstance().searchBarEnabled.getValue();
+        // Only allow typing if search is open
+        if (!searchOpen) {
+            this.widgets.forEach(component -> component.onKeyTyped(input.codepointAsString(), input.modifiers()));
+            return super.charTyped(input);
+        }
+        
         String searchQuery = ClickGuiModule.getInstance().searchBar.getValue();
         String character = input.codepointAsString();
         
-        // Only add to search if search is enabled and it's a printable character
-        if (searchEnabled && !character.isEmpty() && searchQuery.length() < 50) {
+        if (!character.isEmpty() && searchQuery.length() < 50) {
             ClickGuiModule.getInstance().searchBar.setValue(searchQuery + character);
             return true;
         }

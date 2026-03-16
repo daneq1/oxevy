@@ -23,6 +23,7 @@ public class ArrayListHudModule extends HudModule {
     public final Setting<Boolean> outline = bool("Outline", false);
     public final Setting<Boolean> smoothAnimations = bool("SmoothAnimations", true);
     public final Setting<Float> animationSpeed = num("AnimationSpeed", 0.15f, 0.05f, 0.5f);
+    public final Setting<String> slideDirection = str("SlideDirection", "Left");
 
     // Animation tracking
     private final Map<Module, Float> moduleAnimations = new HashMap<>();
@@ -74,7 +75,16 @@ public class ArrayListHudModule extends HudModule {
             moduleAnimations.put(module, currentAnim);
 
             // Calculate position with slide-in animation
-            float slideOffset = smoothAnimations.getValue() ? (1.0f - currentAnim) * 20.0f : 0.0f;
+            float slideOffset = 0;
+            if (smoothAnimations.getValue()) {
+                float direction = switch (slideDirection.getValue()) {
+                    case "Right" -> -1.0f;
+                    case "Up" -> 1.0f;
+                    case "Down" -> -1.0f;
+                    default -> 1.0f; // Left
+                };
+                slideOffset = direction * (1.0f - currentAnim) * 100.0f;
+            }
             float animatedX = x + slideOffset;
             float alpha = smoothAnimations.getValue() ? currentAnim : 1.0f;
 

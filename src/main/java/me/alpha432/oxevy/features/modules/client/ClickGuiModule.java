@@ -28,6 +28,13 @@ public class ClickGuiModule extends Module {
     public Setting<Boolean> searchBarEnabled = bool("SearchBarEnabled", true);
     public Setting<String> searchBar = str("SearchBar", "");
     public Setting<Bind> searchToggleBind = key("SearchToggleBind", new Bind(GLFW.GLFW_KEY_F));
+    public Setting<Integer> searchWidth = num("SearchWidth", 240, 100, 400);
+    public Setting<Integer> searchXOffset = num("SearchXOffset", 50, 0, 200);
+    public Setting<Integer> searchYOffset = num("SearchYOffset", 4, 0, 50);
+    public Setting<Boolean> searchShowIcon = bool("SearchIcon", true);
+    public Setting<Color> searchBgColor = color("SearchBgColor", 60, 60, 60, 255);
+    public Setting<Color> searchTextColor = color("SearchTextColor", 255, 255, 255, 255);
+    public Setting<Color> searchPlaceholderColor = color("SearchPlaceholderColor", 117, 117, 117, 255);
     
     // Animation settings
     public Setting<Boolean> animationsEnabled = bool("AnimationsEnabled", true);
