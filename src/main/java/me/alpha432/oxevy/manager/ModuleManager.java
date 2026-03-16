@@ -38,6 +38,7 @@ import me.alpha432.oxevy.features.modules.player.AutoTotemModule;
 import me.alpha432.oxevy.features.modules.player.AutoEatModule;
 import me.alpha432.oxevy.features.modules.player.AirPlaceModule;
 import me.alpha432.oxevy.features.modules.player.FastBreakModule;
+import me.alpha432.oxevy.features.modules.player.ReachModule;
 import me.alpha432.oxevy.features.modules.render.BlockHighlightModule;
 import me.alpha432.oxevy.features.modules.render.ChestESPModule;
 import me.alpha432.oxevy.features.modules.render.TracerModule;
@@ -102,6 +103,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new AutoEatModule());
         register(new AirPlaceModule());
         register(new FastBreakModule());
+        register(new ReachModule());
 
         LOGGER.info("Registered {} modules", modules.size());
 

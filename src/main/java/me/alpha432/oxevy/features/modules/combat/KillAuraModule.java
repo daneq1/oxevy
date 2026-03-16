@@ -2,6 +2,7 @@ package me.alpha432.oxevy.features.modules.combat;
 
 import me.alpha432.oxevy.Oxevy;
 import me.alpha432.oxevy.features.modules.Module;
+import me.alpha432.oxevy.features.modules.player.ReachModule;
 import me.alpha432.oxevy.features.settings.Setting;
 import me.alpha432.oxevy.util.MathUtil;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
@@ -73,7 +74,15 @@ public class KillAuraModule extends Module {
     private Entity findTarget() {
         Entity closestEntity = null;
         double closestDistanceSq = Double.MAX_VALUE;
-        double rangeSq = range.getValue() * range.getValue();
+        
+        double baseRange = range.getValue();
+        double reachBonus = 0;
+        ReachModule reach = (ReachModule) Oxevy.moduleManager.getModuleByClass(ReachModule.class);
+        if (reach != null && reach.isEnabled()) {
+            reachBonus = reach.getCombatReach() - 3.0;
+        }
+        double effectiveRange = baseRange + reachBonus;
+        double rangeSq = effectiveRange * effectiveRange;
 
         // Optimized for-loop instead of Stream API
         for (Entity entity : mc.level.entitiesForRendering()) {
@@ -91,7 +100,16 @@ public class KillAuraModule extends Module {
 
     private boolean isValid(Entity entity) {
         if (entity == null || entity.equals(mc.player)) return false;
-        if (mc.player.distanceToSqr(entity) > range.getValue() * range.getValue()) return false;
+        
+        double baseRange = range.getValue();
+        double reachBonus = 0;
+        ReachModule reach = (ReachModule) Oxevy.moduleManager.getModuleByClass(ReachModule.class);
+        if (reach != null && reach.isEnabled()) {
+            reachBonus = reach.getCombatReach() - 3.0;
+        }
+        double effectiveRange = baseRange + reachBonus;
+        
+        if (mc.player.distanceToSqr(entity) > effectiveRange * effectiveRange) return false;
         if (entity.isRemoved() || !entity.isAlive()) return false;
         if (!invisibles.getValue() && entity.isInvisible()) return false;
         if (entity instanceof Player) {

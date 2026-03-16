@@ -2,6 +2,7 @@ package me.alpha432.oxevy.features.modules.player;
 
 import me.alpha432.oxevy.features.modules.Module;
 import me.alpha432.oxevy.features.settings.Setting;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -24,8 +25,14 @@ public class AutoEatModule extends Module {
         int foodSlot = findFoodSlot();
         
         if (foodSlot != -1) {
+            int prevSlot = mc.player.getInventory().getSelectedSlot();
             mc.player.getInventory().setSelectedSlot(foodSlot);
-            mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            
+            // Use item in hand
+            mc.player.swing(InteractionHand.MAIN_HAND);
+            
+            // Switch back
+            mc.player.getInventory().setSelectedSlot(prevSlot);
         }
     }
 
