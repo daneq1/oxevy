@@ -17,6 +17,7 @@ import me.alpha432.oxevy.features.modules.combat.AimBotModule;
 import me.alpha432.oxevy.features.modules.combat.AutoCobwebModule;
 import me.alpha432.oxevy.features.modules.combat.AutoTrapModule;
 import me.alpha432.oxevy.features.modules.combat.CriticalsModule;
+import me.alpha432.oxevy.features.modules.combat.HitboxesModule;
 import me.alpha432.oxevy.features.modules.combat.KeyPearlModule;
 import me.alpha432.oxevy.features.modules.combat.KillAuraModule;
 import me.alpha432.oxevy.features.modules.hud.ArrayListHudModule;
@@ -30,11 +31,13 @@ import me.alpha432.oxevy.features.modules.misc.MCFModule;
 import me.alpha432.oxevy.features.modules.combat.Strafe;
 import me.alpha432.oxevy.features.modules.movement.Flight;
 import me.alpha432.oxevy.features.modules.movement.ReverseStepModule;
+import me.alpha432.oxevy.features.modules.movement.ScaffoldModule;
 import me.alpha432.oxevy.features.modules.movement.SpeedHack;
 import me.alpha432.oxevy.features.modules.movement.StepModule;
 import me.alpha432.oxevy.features.modules.movement.TimerModule;
 import me.alpha432.oxevy.features.modules.player.FastPlaceModule;
 import me.alpha432.oxevy.features.modules.player.NoFallModule;
+import me.alpha432.oxevy.features.modules.player.NukerModule;
 import me.alpha432.oxevy.features.modules.player.VelocityModule;
 import me.alpha432.oxevy.features.modules.combat.AutoTotemModule;
 import me.alpha432.oxevy.features.modules.player.AutoEatModule;
@@ -81,9 +84,11 @@ public class ModuleManager implements Jsonable, Util {
         register(new AutoTrapModule());
         register(new AutoCobwebModule());
         register(new CriticalsModule());
+        register(new HitboxesModule());
         register(new MCFModule());
         register(new StepModule());
         register(new ReverseStepModule());
+        register(new ScaffoldModule());
         register(new SpeedHack());
         register(new TimerModule());
         register(new Flight());
@@ -110,6 +115,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new AirPlaceModule());
         register(new FastBreakModule());
         register(new ReachModule());
+        register(new NukerModule());
 
         LOGGER.info("Registered {} modules", modules.size());
 
