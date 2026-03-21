@@ -9,13 +9,14 @@ import me.alpha432.oxevy.features.settings.Bind;
 import me.alpha432.oxevy.manager.CommandManager;
 import me.alpha432.oxevy.util.KeyboardUtil;
 
+import static me.alpha432.oxevy.features.commands.argument.KeyArgumentType.getKey;
 import static me.alpha432.oxevy.features.commands.argument.ModuleArgumentType.getModule;
 import static me.alpha432.oxevy.features.commands.argument.ModuleArgumentType.module;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UNKNOWN;
 
 public class BindCommand extends Command {
-    private Module module;
+    private Module pendingModule;
 
     public BindCommand() {
         super("bind", "setbind");
@@ -26,28 +27,37 @@ public class BindCommand extends Command {
     @Override
     public void createArgumentBuilder(LiteralArgumentBuilder<CommandManager> builder) {
         builder.then(argument("module", module(true))
+                .then(argument("key", me.alpha432.oxevy.features.commands.argument.KeyArgumentType.key())
+                        .executes((ctx) -> {
+                            Module module = getModule(ctx, "module");
+                            int keyCode = getKey(ctx, "key");
+                            module.bind.setValue(new Bind(keyCode));
+                            return success("{green}%s {reset}bind set to {green}%s",
+                                    module.getName(),
+                                    KeyboardUtil.getKeyName(keyCode));
+                        }))
                 .executes((ctx) -> {
-                    module = getModule(ctx, "module");
-                    return success("Press any key...");
+                    pendingModule = getModule(ctx, "module");
+                    return success("{yellow}Press any key to bind... (ESC to cancel)");
                 }));
     }
 
     @Subscribe
     public void onKey(final KeyInputEvent event) {
-        if (nullCheck() || module == null || event.getKey() == GLFW_KEY_UNKNOWN) {
+        if (nullCheck() || pendingModule == null || event.getKey() == GLFW_KEY_UNKNOWN) {
             return;
         }
 
         if (event.getKey() == GLFW_KEY_ESCAPE) {
-            module = null;
+            pendingModule = null;
             sendMessage("Operation canceled.");
             return;
         }
 
-        sendMessage("Bind for {green} %s {} set to {green} %s",
-                module.getName(),
+        sendMessage("{green}%s {reset}bind set to {green}%s",
+                pendingModule.getName(),
                 KeyboardUtil.getKeyName(event.getKey()));
-        module.bind.setValue(new Bind(event.getKey()));
-        module = null;
+        pendingModule.bind.setValue(new Bind(event.getKey()));
+        pendingModule = null;
     }
 }

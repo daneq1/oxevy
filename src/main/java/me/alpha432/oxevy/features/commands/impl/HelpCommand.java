@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.CommandNode;
 import me.alpha432.oxevy.features.commands.Command;
+import me.alpha432.oxevy.features.commands.argument.NumberArgumentType;
 import me.alpha432.oxevy.manager.CommandManager;
 
 import java.util.List;
@@ -27,11 +28,12 @@ public class HelpCommand extends Command {
 
     @Override
     public void createArgumentBuilder(LiteralArgumentBuilder<CommandManager> builder) {
-        builder.then(argument("page", number(Integer.class))
-                        .executes((ctx) -> helpCommands(ctx, get(Integer.class, ctx, "page")))
-                .then(argument("command_name", command())
-                        .executes(this::helpSpecific))
-                .executes((ctx) -> helpCommands(ctx, 1)));
+        NumberArgumentType<Integer> pageArg = number(Integer.class);
+        builder.then(argument("page", pageArg)
+                .executes((ctx) -> helpCommands(ctx, get(Integer.class, ctx, "page"))));
+        builder.then(argument("command_name", command())
+                .executes(this::helpSpecific));
+        builder.executes((ctx) -> helpCommands(ctx, 1));
     }
 
     private int helpSpecific(CommandContext<CommandManager> ctx) {

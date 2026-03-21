@@ -20,39 +20,39 @@ public class FriendCommand extends Command {
     @Override
     public void createArgumentBuilder(LiteralArgumentBuilder<CommandManager> builder) {
         builder.then(literal("list")
+                .executes((ctx) -> {
+                    List<String> friends = Oxevy.friendManager.getFriends();
+                    if (friends.isEmpty()) {
+                        return success("You have no friends :(");
+                    }
+                    StringJoiner joiner = new StringJoiner(",");
+                    friends.forEach(joiner::add);
+                    return success("Friends (%s): %s", friends.size(), joiner);
+                }));
+        builder.then(literal("clear")
+                .executes((ctx) -> {
+                    Oxevy.friendManager.getFriends().clear();
+                    return success("Cleared friends list");
+                }));
+        builder.then(literal("add")
+                .then(argument("username", word())
                         .executes((ctx) -> {
-                            List<String> friends = Oxevy.friendManager.getFriends();
-                            if (friends.isEmpty()) {
-                                return success("You have no friends :(");
+                            String username = getString(ctx, "username");
+                            if (Oxevy.friendManager.isFriend(username)) {
+                                return success("{green} %s {reset} is already on your friends list.", username);
                             }
-                            StringJoiner joiner = new StringJoiner(",");
-                            friends.forEach(joiner::add);
-                            return success("Friends (%s): %s", friends.size(), joiner);
-                        }))
-                .then(literal("clear")
+                            Oxevy.friendManager.addFriend(username);
+                            return success("Added {green} %s {reset} to your friends list", username);
+                        })));
+        builder.then(literal("remove")
+                .then(argument("username", word())
                         .executes((ctx) -> {
-                            Oxevy.friendManager.getFriends().clear();
-                            return success("Cleared friends list");
-                        }))
-                .then(literal("add")
-                        .then(argument("username", word())
-                                .executes((ctx) -> {
-                                    String username = getString(ctx, "username");
-                                    if (Oxevy.friendManager.isFriend(username)) {
-                                        return success("{green} %s {reset} is already on your friends list.", username);
-                                    }
-                                    Oxevy.friendManager.addFriend(username);
-                                    return success("Added {green} %s {reset} to your friends list", username);
-                                })))
-                .then(literal("remove")
-                        .then(argument("username", word())
-                                .executes((ctx) -> {
-                                    String username = getString(ctx, "username");
-                                    if (!Oxevy.friendManager.isFriend(username)) {
-                                        return success("{green} %s {reset} is not on your friends list.", username);
-                                    }
-                                    Oxevy.friendManager.removeFriend(username);
-                                    return success("Removed {green} %s {reset} from your friends list", username);
-                                })));
+                            String username = getString(ctx, "username");
+                            if (!Oxevy.friendManager.isFriend(username)) {
+                                return success("{green} %s {reset} is not on your friends list.", username);
+                            }
+                            Oxevy.friendManager.removeFriend(username);
+                            return success("Removed {green} %s {reset} from your friends list", username);
+                        })));
     }
 }

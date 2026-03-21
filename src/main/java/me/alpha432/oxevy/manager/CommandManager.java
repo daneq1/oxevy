@@ -8,7 +8,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.alpha432.oxevy.Oxevy;
 import me.alpha432.oxevy.features.Feature;
 import me.alpha432.oxevy.features.commands.Command;
-import me.alpha432.oxevy.features.commands.impl.*;
+import me.alpha432.oxevy.features.commands.impl.ConfigCommand;
+import me.alpha432.oxevy.features.commands.impl.FriendCommand;
+import me.alpha432.oxevy.features.commands.impl.HelpCommand;
+import me.alpha432.oxevy.features.commands.impl.PanicCommand;
+import me.alpha432.oxevy.features.commands.impl.PrefixCommand;
+import me.alpha432.oxevy.features.commands.impl.ToggleCommand;
+import me.alpha432.oxevy.features.commands.impl.DrawnCommand;
+import me.alpha432.oxevy.features.commands.impl.BindCommand;
 import me.alpha432.oxevy.util.traits.Jsonable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +46,7 @@ public class CommandManager extends Feature implements Jsonable {
         register(new PrefixCommand());
         register(new ToggleCommand());
         register(new ConfigCommand());
+        register(new PanicCommand());
 
         LOGGER.info("Registered {} commands", commandList.size());
         Oxevy.configManager.addConfig(this);

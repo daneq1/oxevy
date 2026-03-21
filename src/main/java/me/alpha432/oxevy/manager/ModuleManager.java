@@ -30,6 +30,7 @@ import me.alpha432.oxevy.features.modules.hud.MenuWatermark;
 import me.alpha432.oxevy.features.modules.misc.MCFModule;
 import me.alpha432.oxevy.features.modules.combat.Strafe;
 import me.alpha432.oxevy.features.modules.movement.Flight;
+import me.alpha432.oxevy.features.modules.movement.FreeCam;
 import me.alpha432.oxevy.features.modules.movement.ReverseStepModule;
 import me.alpha432.oxevy.features.modules.movement.ScaffoldModule;
 import me.alpha432.oxevy.features.modules.movement.SpeedHack;
@@ -92,6 +93,7 @@ public class ModuleManager implements Jsonable, Util {
         register(new SpeedHack());
         register(new TimerModule());
         register(new Flight());
+        register(new FreeCam());
         register(new Strafe());
         register(new FastPlaceModule());
         register(new VelocityModule());
